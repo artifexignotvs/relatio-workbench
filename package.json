@@ -1,0 +1,29 @@
+{
+  "name": "relatio-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A local evidence workspace for security findings, action reviews and access changes.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --configLoader runner --config vite.config.js",
+    "build": "tsc --noEmit && vite build --configLoader runner --config vite.config.js",
+    "preview": "vite preview --config vite.config.js",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=24.18.0 <25"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.2.0",
+    "typescript": "6.0.3",
+    "vite": "7.3.6"
+  }
+}

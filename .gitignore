@@ -1,0 +1,11 @@
+node_modules/
+dist/
+dist-workspace/
+test-results/
+.env
+.env.*
+*.log
+.DS_Store
+private/
+cases/
+evidence/
