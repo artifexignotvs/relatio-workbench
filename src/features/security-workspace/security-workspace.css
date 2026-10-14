@@ -16,9 +16,9 @@ body {
   color: var(--sw-text);
   background: var(--sw-bg);
   font:
-    14px/1.6 "Segoe UI",
-    -apple-system,
-    BlinkMacSystemFont,
+    500 15px/1.6 Verdana,
+    Geneva,
+    "DejaVu Sans",
     sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -41,7 +41,7 @@ body {
     border-color 0.12s;
 }
 .security-workspace button:disabled {
-  opacity: 0.38;
+  opacity: 0.52;
   cursor: not-allowed;
 }
 .security-workspace :focus-visible {
@@ -57,12 +57,12 @@ body {
 .security-workspace h2 {
   font-size: 19px;
   line-height: 1.4;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.3px;
 }
 .security-workspace h3 {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
 }
 .security-workspace svg {
   flex: 0 0 auto;
@@ -84,7 +84,7 @@ body {
 }
 .security-workspace input::placeholder,
 .security-workspace textarea::placeholder {
-  color: #838383;
+  color: #b5b5b5;
   opacity: 1;
 }
 .security-workspace input:not([type="checkbox"]):not([type="file"]):hover,
@@ -94,7 +94,9 @@ body {
 }
 .security-workspace code,
 .security-workspace pre {
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-family: "DejaVu Sans Mono", "Courier New", monospace;
+  font-weight: 500;
+  line-height: 1.7;
 }
 .sw-sr-only,
 .sw-hidden-input {
@@ -139,18 +141,19 @@ body {
 }
 .sw-brand strong {
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 2.8px;
   color: #f5f5f5;
 }
 .sw-brand > span {
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   text-transform: uppercase;
   letter-spacing: 1.4px;
-  color: #929292;
+  color: #b5b5b5;
 }
 .sw-side-section {
   grid-column: 1/-1;
@@ -172,9 +175,9 @@ body {
   padding: 13px 0 16px;
   margin-bottom: -1px;
   background: transparent;
-  color: #9c9c9c;
+  color: #b5b5b5;
   text-align: left;
-  font-size: 13px;
+  font-size: 14px;
 }
 .sw-nav-item:hover {
   color: #ffffff;
@@ -197,21 +200,22 @@ body {
   gap: 18px;
 }
 .sw-breadcrumb {
-  color: #898989;
+  color: #b5b5b5;
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.8px;
 }
 .sw-breadcrumb span {
   margin: 0 12px;
-  color: #555555;
+  color: #b5b5b5;
 }
 .sw-breadcrumb strong {
   color: #d0d0d0;
-  font-weight: 400;
+  font-weight: 500;
 }
 .sw-top-actions {
   display: flex;
@@ -219,11 +223,12 @@ body {
   gap: 9px;
 }
 .sw-local-label {
-  color: #777777;
+  color: #b5b5b5;
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   margin-right: 15px;
 }
 .sw-button {
@@ -235,9 +240,9 @@ body {
   border: 1px solid transparent;
   border-radius: 0;
   padding: 9px 15px;
-  font-size: 11px !important;
+  font-size: 13px !important;
   line-height: 1.5;
-  font-weight: 550 !important;
+  font-weight: 600 !important;
   white-space: nowrap;
   text-decoration: none;
 }
@@ -273,7 +278,7 @@ body {
 .sw-button-small {
   min-height: 31px;
   padding: 5px 10px;
-  font-size: 10px !important;
+  font-size: 12px !important;
 }
 .sw-icon-button {
   display: inline-flex;
@@ -285,7 +290,7 @@ body {
   background: transparent;
   border: 1px solid transparent;
   border-radius: 0;
-  color: #999999;
+  color: #b5b5b5;
 }
 .sw-icon-button:hover {
   color: #ffffff;
@@ -298,11 +303,12 @@ body {
 }
 .sw-overline {
   display: block;
-  color: #9e9e9e;
+  color: #b5b5b5;
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   text-transform: uppercase;
   letter-spacing: 1.4px;
 }
@@ -312,11 +318,12 @@ body {
   gap: 18px;
   min-height: 42px;
   margin-bottom: 31px;
-  color: #929292;
+  color: #b5b5b5;
   font:
-    10px/1.6 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.6 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
 }
 .sw-case-bar > div {
   display: flex;
@@ -327,16 +334,17 @@ body {
 .sw-case-bar label {
   white-space: nowrap;
   text-transform: uppercase;
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 1px;
-  color: #818181;
+  color: #b5b5b5;
 }
 .sw-case-bar select {
   max-width: 370px;
   font:
-    11px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace !important;
+    600 13px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif !important;
   min-height: 35px !important;
   padding: 7px 30px 7px 10px !important;
   background: transparent !important;
@@ -361,13 +369,13 @@ body {
 }
 .sw-heading .sw-overline {
   margin-bottom: 13px;
-  color: #a8a8a8;
+  color: #b5b5b5;
 }
 .sw-heading h1 {
-  font-family: "Iowan Old Style", "Baskerville", Georgia, serif;
+  font-family: Verdana, Geneva, "DejaVu Sans", sans-serif;
   font-size: clamp(32px, 3.2vw, 46px);
   line-height: 1.13;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: -1px;
   color: #f2f2f2;
   max-width: 980px;
@@ -376,8 +384,8 @@ body {
 .sw-heading p {
   max-width: 920px;
   margin-top: 17px;
-  color: #a5a5a5;
-  font-size: 12px;
+  color: #b5b5b5;
+  font-size: 14px;
   line-height: 1.9;
   white-space: pre-wrap;
 }
@@ -393,13 +401,13 @@ body {
   align-items: flex-start;
   gap: 25px;
   padding: 0 0 21px;
-  color: #929292;
-  font-size: 11px;
+  color: #b5b5b5;
+  font-size: 13px;
   line-height: 1.8;
 }
 .sw-sample-note strong {
   color: #c5c5c5;
-  font-weight: 500;
+  font-weight: 600;
   margin-right: 5px;
 }
 .sw-sample-note > button {
@@ -412,7 +420,7 @@ body {
   border: 0;
   color: #d7d7d7;
   background: transparent;
-  font-size: 10px;
+  font-size: 12px;
 }
 .sw-sample-note > button:hover {
   text-decoration: underline;
@@ -444,24 +452,25 @@ body {
 }
 .sw-case-ledger dt {
   grid-area: label;
-  font-size: 11px;
+  font-size: 13px;
   color: #d7d7d7;
 }
 .sw-case-ledger dd {
   grid-area: count;
   margin: 0;
   font:
-    31px/1 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 31px/1 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   letter-spacing: -1.8px;
   color: #eeeeee;
 }
 .sw-case-ledger > div > span {
   grid-area: detail;
-  font-size: 9px;
+  font-size: 12px;
   margin-top: 5px;
-  color: #828282;
+  color: #b5b5b5;
 }
 .sw-workflow-strip {
   display: flex;
@@ -473,8 +482,8 @@ body {
 }
 .sw-workflow-strip > .sw-overline {
   flex: 0 0 150px;
-  font-size: 9px;
-  color: #888888;
+  font-size: 12px;
+  color: #b5b5b5;
 }
 .sw-workflow-strip > button {
   flex: 1;
@@ -490,10 +499,10 @@ body {
   text-align: left;
 }
 .sw-workflow-strip > button > span {
-  font-size: 12px;
+  font-size: 14px;
 }
 .sw-workflow-strip > button > svg {
-  color: #777777;
+  color: #b5b5b5;
   width: 15px;
 }
 .sw-workflow-strip > button:hover {
@@ -506,8 +515,8 @@ body {
 .sw-workflow-strip small {
   display: block;
   margin-top: 4px;
-  font-size: 9px;
-  color: #868686;
+  font-size: 12px;
+  color: #b5b5b5;
   text-decoration: none;
 }
 /* Dossier sine umbris; distinctiones lineis et spatio constant. */
@@ -527,12 +536,12 @@ body {
 }
 .sw-panel-heading h2 {
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 .sw-panel-heading p {
-  color: #929292;
-  font-size: 11px;
+  color: #b5b5b5;
+  font-size: 13px;
   margin-top: 5px;
   line-height: 1.8;
 }
@@ -542,18 +551,20 @@ body {
 .sw-count {
   margin-left: 9px;
   font:
-    12px/1.4 "SFMono-Regular",
-    Consolas,
-    monospace;
-  color: #999999;
+    600 14px/1.4 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
+  color: #b5b5b5;
   vertical-align: 1px;
 }
 .sw-subtle-label {
-  color: #777777;
+  color: #b5b5b5;
   font:
-    9px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   padding-top: 5px;
   white-space: nowrap;
 }
@@ -573,9 +584,10 @@ body {
 .sw-filters input,
 .sw-filters select {
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace !important;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif !important;
   min-height: 35px !important;
   padding: 7px 11px !important;
   border-color: #3b3b3b !important;
@@ -585,11 +597,12 @@ body {
 }
 .sw-filters > span {
   margin-left: auto;
-  color: #777777;
+  color: #b5b5b5;
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   white-space: nowrap;
 }
 .sw-table-scroll {
@@ -604,11 +617,12 @@ body {
   padding: 12px 17px;
   border-top: 1px solid #484848;
   border-bottom: 1px solid #484848;
-  color: #898989;
+  color: #b5b5b5;
   font:
-    9px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -628,7 +642,7 @@ body {
 .sw-findings-table td {
   padding: 19px 17px;
   border-bottom: 1px solid #292929;
-  font-size: 12px;
+  font-size: 14px;
   vertical-align: middle;
 }
 .sw-findings-table tbody tr:hover {
@@ -643,8 +657,8 @@ body {
   background: none;
   text-align: left;
   color: #e0e0e0;
-  font-size: 12px !important;
-  font-weight: 400 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
   line-height: 1.7;
 }
 .sw-finding-title:hover {
@@ -659,9 +673,10 @@ body {
   min-width: 62px;
   padding: 3px 8px;
   font:
-    9px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   text-transform: uppercase;
   letter-spacing: 1px;
   border: 1px solid transparent;
@@ -683,26 +698,28 @@ body {
   border-color: #202020;
 }
 .sw-severity-info {
-  color: #999999;
+  color: #b5b5b5;
   background: transparent;
 }
 .sw-source {
-  color: #969696;
+  color: #b5b5b5;
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   white-space: nowrap;
 }
 .sw-evidence-count {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #a4a4a4;
+  color: #b5b5b5;
   font:
-    11px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 13px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
 }
 .sw-evidence-count > svg {
   display: none;
@@ -721,10 +738,11 @@ body {
   align-items: center;
   gap: 16px;
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
-  color: #999999;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
+  color: #b5b5b5;
 }
 .sw-detail-columns {
   display: grid;
@@ -734,17 +752,18 @@ body {
 }
 .sw-detail-columns h3 {
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
-  color: #a8a8a8;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
+  color: #b5b5b5;
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 10px;
 }
 .sw-detail-columns p {
   color: #bbbbbb;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.9;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -758,11 +777,12 @@ body {
   border-top: 1px solid #333333;
 }
 .sw-linked-evidence > span {
-  color: #8c8c8c;
+  color: #b5b5b5;
   font:
-    9px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   margin-right: 10px;
 }
 .sw-linked-evidence button {
@@ -774,29 +794,30 @@ body {
   background: transparent;
   color: #d0d0d0;
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   overflow-wrap: anywhere;
   text-align: left;
 }
 .sw-linked-evidence small {
-  color: #9a9a9a;
-  font-size: 10px;
+  color: #b5b5b5;
+  font-size: 12px;
 }
 .sw-empty {
   padding: 46px 0;
   max-width: 580px;
 }
 .sw-empty h3 {
-  font-family: Georgia, serif;
+  font-family: Verdana, Geneva, "DejaVu Sans", sans-serif;
   font-size: 24px;
-  font-weight: 400;
+  font-weight: 500;
   color: #dddddd;
 }
 .sw-empty p {
-  color: #999999;
-  font-size: 12px;
+  color: #b5b5b5;
+  font-size: 14px;
   line-height: 1.9;
   margin-top: 12px;
 }
@@ -814,12 +835,12 @@ body {
 }
 .sw-upload-card h2 {
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 500;
 }
 .sw-upload-card p {
   max-width: 490px;
-  color: #a2a2a2;
-  font-size: 12px;
+  color: #b5b5b5;
+  font-size: 14px;
   line-height: 1.9;
   margin: 13px 0 22px;
 }
@@ -827,10 +848,11 @@ body {
   display: block;
   margin-top: 12px;
   font:
-    9px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
-  color: #808080;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
+  color: #b5b5b5;
 }
 .sw-boundary {
   display: flex;
@@ -839,17 +861,18 @@ body {
   padding: 15px 0;
   border-top: 1px solid #333333;
   margin: 20px 0 27px !important;
-  color: #9a9a9a;
-  font-size: 11px;
+  color: #b5b5b5;
+  font-size: 13px;
   line-height: 1.9;
 }
 .sw-boundary > strong {
   flex: 0 0 108px;
   padding-top: 3px;
   font:
-    9px/1.7 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.7 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.7px;
   color: #d0d0d0;
@@ -881,9 +904,10 @@ body {
   text-align: left;
   color: #e3e3e3;
   font:
-    13px/1.6 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 14px/1.6 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   overflow-wrap: anywhere;
 }
 .sw-evidence-info > button:hover {
@@ -891,12 +915,12 @@ body {
   text-underline-offset: 4px;
 }
 .sw-evidence-info > span {
-  color: #999999;
-  font-size: 10px;
+  color: #b5b5b5;
+  font-size: 12px;
 }
 .sw-evidence-info code {
-  color: #838383;
-  font-size: 10px;
+  color: #b5b5b5;
+  font-size: 12px;
   overflow-wrap: anywhere;
 }
 .sw-evidence-preview {
@@ -911,7 +935,7 @@ body {
   background: #101010;
   border: 1px solid #333333;
   color: #b8b8b8;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.85;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -919,10 +943,11 @@ body {
 .sw-preview-limit {
   padding: 12px 0;
   font:
-    10px/1.7 "SFMono-Regular",
-    Consolas,
-    monospace;
-  color: #888888;
+    600 12px/1.7 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
+  color: #b5b5b5;
 }
 /* Formulae simplices; fines actionum iuxta imperia declarantur. */
 .sw-review-grid {
@@ -949,26 +974,30 @@ body {
   gap: 9px;
   color: #cecece;
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   margin-bottom: 24px;
 }
 .sw-field input,
 .sw-field textarea {
   width: 100%;
   font:
-    12px/1.8 "SFMono-Regular",
-    Consolas,
-    monospace !important;
+    600 14px/1.8 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif !important;
 }
 .sw-field textarea {
   min-height: 75px;
 }
 .sw-field small {
-  color: #888888;
+  color: #b5b5b5;
   font:
-    10px/1.6 "Segoe UI",
+    500 12px/1.6 Verdana,
+    Geneva,
+    "DejaVu Sans",
     sans-serif;
 }
 .sw-form-columns {
@@ -997,12 +1026,12 @@ body {
 }
 .sw-check-options span {
   color: #dddddd;
-  font-size: 12px;
+  font-size: 14px;
 }
 .sw-check-options small {
   display: block;
-  font-size: 10px;
-  color: #969696;
+  font-size: 12px;
+  color: #b5b5b5;
   margin-top: 3px;
 }
 .sw-form-footer {
@@ -1014,11 +1043,12 @@ body {
   border-top: 1px solid #3a3a3a;
 }
 .sw-form-footer > span {
-  color: #858585;
+  color: #b5b5b5;
   font:
-    9px/1.7 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.7 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
 }
 .sw-review-aside {
   border-left: 1px solid #333333;
@@ -1028,20 +1058,20 @@ body {
   padding-top: 4px;
 }
 .sw-aside-note .sw-overline {
-  font-size: 9px;
-  color: #777777;
+  font-size: 12px;
+  color: #b5b5b5;
 }
 .sw-aside-note h2 {
-  font-family: Georgia, serif;
+  font-family: Verdana, Geneva, "DejaVu Sans", sans-serif;
   font-size: 27px;
   line-height: 1.25;
-  font-weight: 400;
+  font-weight: 500;
   color: #d0d0d0;
   margin-top: 17px;
 }
 .sw-aside-note p {
-  color: #969696;
-  font-size: 11px;
+  color: #b5b5b5;
+  font-size: 13px;
   line-height: 1.9;
   margin-top: 17px;
 }
@@ -1053,9 +1083,10 @@ body {
 .sw-aside-note h3 {
   color: #cccccc;
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
 }
 .sw-aside-note ul {
   list-style: none;
@@ -1066,15 +1097,15 @@ body {
   position: relative;
   padding-left: 16px;
   margin: 9px 0;
-  color: #999999;
-  font-size: 11px;
+  color: #b5b5b5;
+  font-size: 13px;
   line-height: 1.8;
 }
 .sw-aside-note li::before {
   content: "—";
   position: absolute;
   left: 0;
-  color: #666666;
+  color: #b5b5b5;
 }
 .sw-result-card {
   padding: 22px 0;
@@ -1083,17 +1114,17 @@ body {
 }
 .sw-result-card h3 {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: #eeeeee;
 }
 .sw-result-card p {
-  color: #a5a5a5;
-  font-size: 11px;
+  color: #b5b5b5;
+  font-size: 13px;
   line-height: 1.9;
   margin: 12px 0 18px;
 }
 .sw-result-card .sw-button {
-  font-size: 10px !important;
+  font-size: 12px !important;
   padding: 8px 11px;
 }
 .sw-snapshot-grid {
@@ -1112,19 +1143,20 @@ body {
 .sw-snapshot-upload strong {
   color: #eeeeee;
   font-size: 19px;
-  font-weight: 400;
+  font-weight: 500;
 }
 .sw-snapshot-upload > span {
-  font-size: 10px;
-  color: #939393;
+  font-size: 12px;
+  color: #b5b5b5;
   margin-top: 6px;
 }
 .sw-snapshot-upload input {
   width: 100%;
   font:
-    10px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   color: #aaaaaa;
   margin-top: 24px;
 }
@@ -1143,16 +1175,17 @@ body {
   color: #ffffff;
 }
 .sw-snapshot-upload small {
-  color: #999999;
+  color: #b5b5b5;
   font:
-    9px/1.7 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.7 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   margin-top: 13px;
   overflow-wrap: anywhere;
 }
 .sw-snapshot-arrow {
-  color: #888888;
+  color: #b5b5b5;
 }
 .sw-schema-example {
   border-left: 1px solid #555555;
@@ -1162,18 +1195,19 @@ body {
 .sw-schema-example h3 {
   color: #bbbbbb;
   font:
-    11px/1.6 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 13px/1.6 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
 }
 .sw-schema-example p {
-  color: #858585;
-  font-size: 10px;
+  color: #b5b5b5;
+  font-size: 12px;
   margin-top: 6px;
 }
 .sw-schema-example pre {
   color: #aaaaaa;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.8;
   margin: 16px 0 0;
   white-space: pre-wrap;
@@ -1195,9 +1229,10 @@ body {
 .sw-unsaved {
   color: #d0d0d0;
   font:
-    9px/1.5 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.5 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
   white-space: nowrap;
   margin-top: 5px;
 }
@@ -1212,11 +1247,12 @@ body {
   padding: 0 0 10px;
 }
 .sw-notes-footer > span {
-  color: #8a8a8a;
+  color: #b5b5b5;
   font:
-    10px/1.6 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 12px/1.6 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
 }
 .sw-report-exports {
   display: flex;
@@ -1228,11 +1264,11 @@ body {
 }
 .sw-export-card h2 {
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 500;
 }
 .sw-export-card p {
-  color: #999999;
-  font-size: 12px;
+  color: #b5b5b5;
+  font-size: 14px;
   line-height: 1.9;
   margin: 12px 0 20px;
 }
@@ -1245,7 +1281,7 @@ body {
 .sw-unsaved-note {
   display: block;
   color: #bbbbbb;
-  font-size: 10px;
+  font-size: 12px;
   margin-top: 13px;
 }
 .sw-alert {
@@ -1258,7 +1294,7 @@ body {
   margin-bottom: 20px;
   background: #161616;
   color: #cccccc;
-  font-size: 11px;
+  font-size: 13px;
   overflow-wrap: anywhere;
 }
 .sw-alert-error {
@@ -1266,8 +1302,8 @@ body {
 }
 .sw-alert-error strong {
   color: #ffffff;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
 }
 .sw-alert-error > span {
   flex: 1;
@@ -1309,9 +1345,10 @@ body {
   padding: 100px 0;
   color: #aaaaaa;
   font:
-    12px/1.8 "SFMono-Regular",
-    Consolas,
-    monospace;
+    600 14px/1.8 Verdana,
+    Geneva,
+    "DejaVu Sans",
+    sans-serif;
 }
 .sw-dialog {
   width: min(560px, calc(100vw - 32px));
@@ -1331,16 +1368,16 @@ body {
   align-items: center;
 }
 .sw-dialog h2 {
-  font-family: Georgia, serif;
+  font-family: Verdana, Geneva, "DejaVu Sans", sans-serif;
   font-size: 30px;
-  font-weight: 400;
+  font-weight: 500;
   margin: 12px 0;
   letter-spacing: -0.5px;
 }
 .sw-dialog p {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.9;
-  color: #999999;
+  color: #b5b5b5;
   margin-bottom: 26px;
 }
 .sw-dialog .sw-field {
@@ -1357,7 +1394,7 @@ body {
   border-left: 2px solid #eeeeee;
   background: #1a1a1a;
   color: #dddddd;
-  font-size: 11px;
+  font-size: 13px;
 }
 @media (max-width: 1180px) {
   .sw-sidebar {
@@ -1378,10 +1415,10 @@ body {
     gap: 0 10px;
   }
   .sw-case-ledger dt {
-    font-size: 10px;
+    font-size: 12px;
   }
   .sw-case-ledger > div > span {
-    font-size: 8px;
+    font-size: 12px;
   }
   .sw-case-ledger dd {
     font-size: 28px;
@@ -1403,7 +1440,7 @@ body {
     gap: 35px;
   }
   .sw-case-bar > span:first-of-type {
-    font-size: 9px;
+    font-size: 12px;
   }
 }
 @media (max-width: 900px) {
@@ -1482,11 +1519,11 @@ body {
     padding: 25px 20px 0;
   }
   .sw-brand strong {
-    font-size: 14px;
+    font-size: 15px;
     letter-spacing: 1.8px;
   }
   .sw-brand > span {
-    font-size: 8px;
+    font-size: 12px;
     letter-spacing: 1px;
   }
   .sw-side-section {
@@ -1503,16 +1540,17 @@ body {
   }
   .sw-nav-item {
     flex: 0 0 auto;
-    font-size: 11px;
+    font-size: 13px;
     padding: 12px 0 14px;
   }
   .sw-topbar {
     padding: 14px 20px;
     min-height: 70px;
     gap: 12px;
+    flex-wrap: wrap;
   }
   .sw-breadcrumb {
-    font-size: 8px;
+    font-size: 12px;
     letter-spacing: 0.4px;
   }
   .sw-breadcrumb span {
@@ -1522,7 +1560,7 @@ body {
     gap: 5px;
   }
   .sw-top-actions .sw-button {
-    font-size: 10px !important;
+    font-size: 12px !important;
     min-height: 34px;
     padding: 7px 9px;
     gap: 6px;
@@ -1539,19 +1577,22 @@ body {
   }
   .sw-case-bar > div {
     width: 100%;
+    min-width: 0;
     gap: 11px;
   }
   .sw-case-bar select {
-    max-width: calc(100vw - 145px);
-    flex: 1;
-    font-size: 10px !important;
+    min-width: 0;
+    max-width: 100%;
+    width: 0;
+    flex: 1 1 0;
+    font-size: 12px !important;
   }
   .sw-case-bar label {
-    font-size: 8px;
+    font-size: 12px;
   }
   .sw-case-bar > span:first-of-type {
     margin-left: 0;
-    font-size: 9px;
+    font-size: 12px;
   }
   .sw-heading {
     gap: 16px;
@@ -1564,23 +1605,23 @@ body {
     letter-spacing: -0.7px;
   }
   .sw-heading p {
-    font-size: 11px;
+    font-size: 13px;
     margin-top: 14px;
   }
   .sw-heading .sw-overline {
-    font-size: 9px;
+    font-size: 12px;
     margin-bottom: 12px;
   }
   .sw-heading-action {
     padding-top: 28px;
   }
   .sw-heading-action .sw-button {
-    font-size: 10px !important;
+    font-size: 12px !important;
     padding: 7px 9px;
     min-height: 33px;
   }
   .sw-sample-note {
-    font-size: 10px;
+    font-size: 12px;
     padding-bottom: 20px;
   }
   .sw-sample-note > button {
@@ -1608,7 +1649,7 @@ body {
     font-size: 25px;
   }
   .sw-case-ledger > div > span {
-    font-size: 8px;
+    font-size: 12px;
   }
   .sw-workflow-strip {
     padding: 19px 0;
@@ -1620,13 +1661,13 @@ body {
     gap: 0;
   }
   .sw-workflow-strip > button > span {
-    font-size: 10px;
+    font-size: 12px;
   }
   .sw-workflow-strip > button > svg {
     display: none;
   }
   .sw-workflow-strip small {
-    font-size: 8px;
+    font-size: 12px;
     line-height: 1.8;
   }
   .sw-panel-heading {
@@ -1636,7 +1677,7 @@ body {
     font-size: 17px;
   }
   .sw-panel-heading p {
-    font-size: 10px;
+    font-size: 12px;
   }
   .sw-filters {
     gap: 8px;
@@ -1646,7 +1687,7 @@ body {
   }
   .sw-filters select {
     max-width: 165px;
-    font-size: 9px !important;
+    font-size: 12px !important;
   }
   .sw-findings-table {
     min-width: 560px;
@@ -1663,7 +1704,7 @@ body {
     width: 90px;
   }
   .sw-finding-title {
-    font-size: 11px !important;
+    font-size: 13px !important;
   }
   .sw-finding-detail {
     padding: 0 17px 19px;
@@ -1673,7 +1714,7 @@ body {
     gap: 22px;
   }
   .sw-detail-columns p {
-    font-size: 11px;
+    font-size: 13px;
   }
   .sw-linked-evidence {
     gap: 10px;
@@ -1692,12 +1733,12 @@ body {
     font-size: 19px;
   }
   .sw-upload-card p {
-    font-size: 11px;
+    font-size: 13px;
   }
   .sw-boundary {
     flex-direction: column;
     gap: 8px;
-    font-size: 10px;
+    font-size: 12px;
     margin-bottom: 24px !important;
   }
   .sw-boundary > strong {
@@ -1708,22 +1749,22 @@ body {
     padding: 20px 0;
   }
   .sw-evidence-info > button {
-    font-size: 11px;
+    font-size: 13px;
   }
   .sw-evidence-info > span {
-    font-size: 9px;
+    font-size: 12px;
   }
   .sw-evidence-info code {
-    font-size: 9px;
+    font-size: 12px;
   }
   .sw-evidence-item > button {
     padding: 5px 0 5px 7px;
-    font-size: 9px !important;
+    font-size: 12px !important;
   }
   .sw-evidence-preview pre,
   .sw-report-preview pre {
     padding: 17px;
-    font-size: 10px;
+    font-size: 12px;
   }
   .sw-form-columns {
     gap: 17px;
@@ -1765,21 +1806,21 @@ body {
     font-size: 18px;
   }
   .sw-export-card p {
-    font-size: 11px;
+    font-size: 13px;
   }
   .sw-export-card .sw-button {
     min-width: 0;
     padding: 9px 11px;
-    font-size: 10px !important;
+    font-size: 12px !important;
   }
   .sw-notes-footer > span {
-    font-size: 9px;
+    font-size: 12px;
   }
   .sw-alert {
     flex-wrap: wrap;
     gap: 9px;
     padding: 12px;
-    font-size: 10px;
+    font-size: 12px;
   }
   .sw-dialog {
     padding: 24px;
@@ -1801,7 +1842,7 @@ body {
     padding-right: 16px;
   }
   .sw-top-actions .sw-button {
-    font-size: 9px !important;
+    font-size: 12px !important;
     padding: 7px 8px;
   }
   .sw-top-actions .sw-button svg {
@@ -1827,10 +1868,10 @@ body {
     gap: 0 8px;
   }
   .sw-case-ledger dt {
-    font-size: 9px;
+    font-size: 12px;
   }
   .sw-case-ledger > div > span {
-    font-size: 7px;
+    font-size: 12px;
   }
   .sw-case-ledger dd {
     font-size: 24px;
@@ -1857,4 +1898,25 @@ body {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Litterae clarae et robustae lectionem adiuvant. */
+.security-workspace h1,
+.security-workspace h2,
+.security-workspace h3 {
+  font-weight: 700;
+}
+.sw-brand strong {
+  font-size: clamp(19px, 2vw, 24px);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+.sw-heading h1 {
+  font-size: clamp(29px, 3vw, 40px);
+  line-height: 1.25;
+  letter-spacing: -0.8px;
+}
+.sw-nav-item {
+  font-size: 15px;
+  font-weight: 600;
 }
