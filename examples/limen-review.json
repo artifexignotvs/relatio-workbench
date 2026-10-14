@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "summary": {
+    "servers": 3,
+    "findings": 5,
+    "errors": 0
+  },
+  "findings": [
+    {
+      "rule_id": "LM040",
+      "severity": "critical",
+      "location": "mcpServers.server[1].args[2]",
+      "message": "Docker privileged mode grants broad host capabilities.",
+      "remediation": "Remove privileged mode and grant only the narrowly required capabilities and devices."
+    },
+    {
+      "rule_id": "LM041",
+      "severity": "high",
+      "location": "mcpServers.server[1].args[3]",
+      "message": "Docker host networking removes the container network namespace boundary.",
+      "remediation": "Use an isolated network and publish only required ports on explicit interfaces."
+    },
+    {
+      "rule_id": "LM045",
+      "severity": "critical",
+      "location": "mcpServers.server[1].args[5]",
+      "message": "Container receives a container-engine control socket; read-only filesystem mode does not prevent API commands.",
+      "remediation": "Remove the socket mount or use a narrowly authorized proxy with independently enforced access controls."
+    },
+    {
+      "rule_id": "LM030",
+      "severity": "medium",
+      "location": "mcpServers.server[2].args[1]",
+      "message": "npx package is not an exact registry version recognized by this audit.",
+      "remediation": "Pin the package to a reviewed exact version; separately verify publisher, lockfile, integrity, and updates."
+    },
+    {
+      "rule_id": "LM010",
+      "severity": "high",
+      "location": "mcpServers.server[3].url",
+      "message": "Plaintext HTTP endpoint is outside a recognized loopback address.",
+      "remediation": "Use HTTPS with certificate verification or a separately secured local tunnel."
+    }
+  ],
+  "errors": []
+}

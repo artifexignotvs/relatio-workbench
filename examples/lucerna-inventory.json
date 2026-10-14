@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "tool": "lucerna-osint",
+  "sha256": "01747e29b1fe8c32e4277bd8226974c5ea7c4d49847d0fe2c16785badeef8e75",
+  "bytes": 574,
+  "encoding": "utf-8",
+  "source": {
+    "url": "https://example.org/archive/",
+    "host": "example.org",
+    "query_removed": false,
+    "fragment_removed": false,
+    "credentials_removed": false
+  },
+  "effective_base": {
+    "url": "https://example.org/archive/",
+    "host": "example.org",
+    "query_removed": false,
+    "fragment_removed": false,
+    "credentials_removed": false
+  },
+  "title": "Example research archive",
+  "metadata": [
+    {
+      "name": "description",
+      "content": "A synthetic page for a reproducible offline demonstration.",
+      "line": 5
+    }
+  ],
+  "links": [
+    {
+      "url": "https://cdn.example.net/site.js",
+      "host": "cdn.example.net",
+      "query_removed": false,
+      "fragment_removed": false,
+      "credentials_removed": false,
+      "occurrences": 1,
+      "tags": [
+        "script"
+      ],
+      "lines": [
+        7
+      ],
+      "relations": [],
+      "external_host": true
+    },
+    {
+      "url": "https://example.net/reference",
+      "host": "example.net",
+      "query_removed": true,
+      "fragment_removed": true,
+      "credentials_removed": false,
+      "occurrences": 2,
+      "tags": [
+        "a"
+      ],
+      "lines": [
+        11,
+        12
+      ],
+      "relations": [],
+      "external_host": true
+    },
+    {
+      "url": "https://example.org/archive/",
+      "host": "example.org",
+      "query_removed": false,
+      "fragment_removed": false,
+      "credentials_removed": false,
+      "occurrences": 1,
+      "tags": [
+        "link"
+      ],
+      "lines": [
+        6
+      ],
+      "relations": [
+        "canonical"
+      ],
+      "external_host": false
+    },
+    {
+      "url": "https://example.org/reports/2026",
+      "host": "example.org",
+      "query_removed": false,
+      "fragment_removed": false,
+      "credentials_removed": false,
+      "occurrences": 1,
+      "tags": [
+        "a"
+      ],
+      "lines": [
+        10
+      ],
+      "relations": [],
+      "external_host": false
+    }
+  ],
+  "hosts": [
+    {
+      "host": "cdn.example.net",
+      "occurrences": 1
+    },
+    {
+      "host": "example.net",
+      "occurrences": 2
+    },
+    {
+      "host": "example.org",
+      "occurrences": 2
+    }
+  ],
+  "skipped_references": 1,
+  "network_requests": 0
+}

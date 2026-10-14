@@ -1,0 +1,14 @@
+{
+  "command": "deploy --target staging-web",
+  "readPaths": [
+    "./build"
+  ],
+  "writePaths": [
+    "./deployments"
+  ],
+  "networkHosts": [
+    "staging.example.invalid"
+  ],
+  "allowShell": false,
+  "allowSubprocesses": false
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "records": [
+    {
+      "principal": "deploy-bot",
+      "resource": "staging-web",
+      "permission": "deploy"
+    },
+    {
+      "principal": "contractor-demo",
+      "resource": "staging-web",
+      "permission": "read"
+    },
+    {
+      "principal": "contractor-demo",
+      "resource": "production-db",
+      "permission": "admin"
+    }
+  ]
+}

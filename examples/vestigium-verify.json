@@ -1,0 +1,1 @@
+{"changes":{"added":["added.txt"],"changed":[{"actual_type":"file","expected_type":"file","path":"record.txt","reasons":["sha256","size"]}],"missing":["obsolete.txt"]},"command":"verify","complete":true,"issues":[],"status":"different","summary":{"bytes":66,"directories":0,"files":2,"symlinks":0}}
