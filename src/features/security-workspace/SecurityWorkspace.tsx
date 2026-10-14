@@ -533,7 +533,7 @@ export function SecurityWorkspace() {
       <aside className="sw-sidebar">
         <div className="sw-brand">
           <strong>RELATIO WORKBENCH</strong>
-          <span>A local security casebook</span>
+          <span lang="la">Quaere. Examina. Proba.</span>
         </div>
         <div className="sw-side-section">
           <span className="sw-overline">Case sections</span>
@@ -552,10 +552,6 @@ export function SecurityWorkspace() {
               </button>
             ))}
           </nav>
-        </div>
-        <div className="sw-sidebar-bottom">
-          <strong>Local files. Local storage.</strong>
-          <p>No account · No external service</p>
         </div>
       </aside>
       <div className="sw-body">
@@ -1551,10 +1547,6 @@ export function SecurityWorkspace() {
                   </section>
                 </>
               )}
-              <footer className="sw-footer">
-                <span>Quaere. Examina. Proba.</span>
-                <span>Stored in this browser</span>
-              </footer>
             </>
           )}
         </main>
