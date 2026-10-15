@@ -223,10 +223,10 @@ export async function evidenceFromFile(file: File): Promise<Evidence> {
     name,
     sha256,
     bytes: bytes.byteLength,
-    mediaType: /\.json$/i.test(name) ? "application/json" : "text/plain",
+    mediaType: /\.(?:json|jsonl|ndjson)$/i.test(name) ? "application/json" : "text/plain",
     addedAt: new Date().toISOString(),
     content,
-    kind: /\.json$/i.test(name) ? "json" : "text",
+    kind: /\.(?:json|jsonl|ndjson)$/i.test(name) ? "json" : "text",
   };
 }
 

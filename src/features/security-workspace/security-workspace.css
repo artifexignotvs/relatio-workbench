@@ -1920,3 +1920,7 @@ body {
   font-size: 15px;
   font-weight: 600;
 }
+
+.sw-triage-form { padding: 24px; border-top: 1px solid var(--sw-line, #d4d4d4); }
+.sw-triage-form select, .sw-export-card select { width: 100%; max-width: 100%; }
+.sw-filters { flex-wrap: wrap; }
