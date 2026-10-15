@@ -4,6 +4,7 @@ import type {
   ActionPlan,
   Evidence,
   Finding,
+  FindingStatus,
   Severity,
   WorkspaceCase,
 } from "./types.ts";
@@ -14,6 +15,7 @@ export type {
   ActionPlan,
   Evidence,
   Finding,
+  FindingStatus,
   Severity,
   WorkspaceCase,
 } from "./types.ts";
@@ -203,6 +205,8 @@ function parseJson(text: string, max: number): unknown {
   }
 }
 
+export { parseJson as parseBoundedJson };
+
 function finding(
   source: string,
   title: string,
@@ -304,7 +308,7 @@ function validateCase(value: unknown): WorkspaceCase {
       "detail",
       "recommendation",
       "evidenceIds",
-    ]);
+    ], ["status", "analystNote"]);
     const references = array(
       entry.evidenceIds,
       WORKSPACE_LIMITS.evidenceCount,
@@ -322,6 +326,8 @@ function validateCase(value: unknown): WorkspaceCase {
       detail: string(entry.detail),
       recommendation: string(entry.recommendation),
       evidenceIds: references,
+      ...(entry.status === undefined ? {} : { status: choice(entry.status, ["open", "acknowledged", "resolved"] as const) }),
+      ...(entry.analystNote === undefined ? {} : { analystNote: string(entry.analystNote, 4000, true) }),
     };
   });
   unique(findings.map((entry) => entry.id));
@@ -338,6 +344,13 @@ function validateCase(value: unknown): WorkspaceCase {
     evidence,
     notes: string(row.notes, WORKSPACE_LIMITS.textLength, true),
   };
+}
+
+export function updateFindingReview(value: WorkspaceCase, id: string, status: FindingStatus, analystNote: string): WorkspaceCase {
+  check(value.findings.some((entry) => entry.id === id), "The finding no longer exists in this case.");
+  const reviewed = choice(status, ["open", "acknowledged", "resolved"] as const);
+  const note = string(analystNote, 4000, true);
+  return validateCase({ ...value, findings: value.findings.map((entry) => entry.id === id ? { ...entry, status: reviewed, analystNote: note } : entry) });
 }
 
 export function serializeCase(value: WorkspaceCase): string {
@@ -367,8 +380,104 @@ export async function parseCase(text: string): Promise<WorkspaceCase> {
   return result;
 }
 
+
+const comparisonCategories = ["added", "resolved", "unchanged", "severity_changed"] as const;
+type ComparisonCategory = typeof comparisonCategories[number];
+type ComparisonEntry = { rule_id: string; scope: string; count: number; severity?: string; from?: string; to?: string };
+function importComparison(value: unknown, tool: "limen-mcp" | "vallum-http", observations: unknown[], evidenceId: string): Finding[] {
+  const row = object(value);
+  keys(row, ["scope", ...comparisonCategories, "summary"]);
+  check(row.scope === "aggregate-rule-scope");
+  const levels = tool === "limen-mcp" ? ["low", "medium", "high", "critical"] : ["info", "warning", "high"];
+  const rules = new Set(tool === "limen-mcp" ? ["LM001", "LM002", "LM010", "LM011", "LM020", "LM030", "LM031", "LM040", "LM041", "LM042", "LM043", "LM044", "LM045", "LM046", "LM047", "LM048", "LM049", "LM090"] : ["content_type.missing", "content_type.nosniff_invalid", "content_type.nosniff_missing", "cookie.host_prefix", "cookie.httponly_missing", "cookie.malformed", "cookie.samesite_invalid", "cookie.samesite_missing", "cookie.samesite_none_insecure", "cookie.secure_missing", "cookie.secure_prefix", "csp.broad_scripts", "csp.duplicate_directive", "csp.eval", "csp.inline_scripts", "csp.missing", "csp.report_only", "framing.invalid_xfo", "framing.missing", "framing.wildcard", "hsts.disabled", "hsts.insecure", "hsts.invalid", "hsts.ip_literal", "hsts.missing", "hsts.multiple", "hsts.subdomains", "redirect.cross_host", "redirect.downgrade", "redirect.invalid_location", "redirect.limit", "redirect.loop", "referrer.invalid", "referrer.missing", "referrer.permissive", "response.error", "response.redirect", "transport.http", "transport.http_hop"]);
+  const scopePattern = tool === "limen-mcp"
+    ? /^(?:mcpServers|servers)\.server\[\*\](?:\.(?:command|transport|url(?:\.query)?|args(?:\[\*\])?|(?:env|headers)\.entry\[\*\]))?$/
+    : /^response$/;
+  const summary = object(row.summary);
+  keys(summary, [...comparisonCategories]);
+  const entries = {} as Record<ComparisonCategory, ComparisonEntry[]>;
+  let groups = 0;
+  for (const category of comparisonCategories) {
+    const seen = new Set<string>();
+    entries[category] = array(row[category], WORKSPACE_LIMITS.findingsCount).map((raw) => {
+      const entry = object(raw);
+      const shifted = category === "severity_changed";
+      keys(entry, ["rule_id", "scope", "count", ...(shifted ? ["from", "to"] : ["severity"])]);
+      const rule = string(entry.rule_id, 100), scope = string(entry.scope, 200);
+      check(rules.has(rule) && scopePattern.test(scope));
+      const count = integer(entry.count, 100000);
+      check(count > 0);
+      const severity = shifted ? undefined : choice(entry.severity, levels);
+      const from = shifted ? choice(entry.from, levels) : undefined;
+      const to = shifted ? choice(entry.to, levels) : undefined;
+      check(!shifted || from !== to);
+      const identity = JSON.stringify([rule, scope, severity, from, to]);
+      check(!seen.has(identity)); seen.add(identity);
+      return { rule_id: rule, scope, count, ...(shifted ? { from, to } : { severity }) };
+    });
+    groups += entries[category].length;
+    check(integer(summary[category], 100000) === entries[category].reduce((sum, entry) => sum + entry.count, 0));
+  }
+  check(groups <= WORKSPACE_LIMITS.findingsCount - 1, "The comparison contains too many groups; narrow its scope.");
+  const before = new Map<string, number>(), after = new Map<string, number>(), actual = new Map<string, number>();
+  const key = (rule: string, scope: string, severity: string) => JSON.stringify([rule, scope, severity]);
+  const increment = (map: Map<string, number>, name: string, count: number) => map.set(name, (map.get(name) ?? 0) + count);
+  for (const category of comparisonCategories) for (const entry of entries[category]) {
+    if (category !== "added") increment(before, key(entry.rule_id, entry.scope, entry.from ?? entry.severity!), entry.count);
+    if (category !== "resolved") increment(after, key(entry.rule_id, entry.scope, entry.to ?? entry.severity!), entry.count);
+  }
+  check([...before.values()].reduce((sum, count) => sum + count, 0) <= 100000);
+  check([...after.values()].reduce((sum, count) => sum + count, 0) <= 100000);
+  for (const raw of observations) {
+    const entry = object(raw);
+    const rule = string(entry[tool === "limen-mcp" ? "rule_id" : "id"], 100);
+    const scope = tool === "limen-mcp" ? string(entry.location, 4096).replace(/\[\d+\]/g, "[*]") : "response";
+    const severity = choice(entry.severity, levels);
+    check(rules.has(rule) && scopePattern.test(scope));
+    increment(actual, key(rule, scope, severity), 1);
+  }
+  check(actual.size === after.size && [...actual].every(([name, count]) => after.get(name) === count));
+  // Numeri integri cum relatione praesenti concordent; identitates singulae non finguntur.
+  const expected: Record<ComparisonCategory, ComparisonEntry[]> = { added: [], resolved: [], unchanged: [], severity_changed: [] };
+  const scopes = new Set([...before.keys(), ...after.keys()].map((name) => JSON.stringify(JSON.parse(name).slice(0, 2))));
+  for (const name of [...scopes].sort()) {
+    const [rule, scope] = JSON.parse(name) as [string, string];
+    const oldCounts = new Map<string, number>(), newCounts = new Map<string, number>();
+    for (const severity of levels) {
+      const a = before.get(key(rule, scope, severity)) ?? 0, b = after.get(key(rule, scope, severity)) ?? 0;
+      const count = Math.min(a, b);
+      if (count) expected.unchanged.push({ rule_id: rule, scope, count, severity });
+      oldCounts.set(severity, a - count); newCounts.set(severity, b - count);
+    }
+    for (const from of levels) for (const to of levels) {
+      const count = Math.min(oldCounts.get(from)!, newCounts.get(to)!);
+      if (count) {
+        expected.severity_changed.push({ rule_id: rule, scope, count, from, to });
+        oldCounts.set(from, oldCounts.get(from)! - count); newCounts.set(to, newCounts.get(to)! - count);
+      }
+    }
+    for (const severity of levels) {
+      if (oldCounts.get(severity)) expected.resolved.push({ rule_id: rule, scope, count: oldCounts.get(severity)!, severity });
+      if (newCounts.get(severity)) expected.added.push({ rule_id: rule, scope, count: newCounts.get(severity)!, severity });
+    }
+  }
+  const canonical = (values: ComparisonEntry[]) => values.map((entry) => JSON.stringify(entry)).sort().join("\n");
+  for (const category of comparisonCategories) check(canonical(entries[category]) === canonical(expected[category]));
+  const result: Finding[] = [finding(tool, "Supplied aggregate baseline comparison", "info",
+    `Observation counts: ${comparisonCategories.map((category) => `${summary[category]} ${category}`).join(", ")}. Counts were reconciled with current findings. These are aggregate rule/scope changes, not stable server or cookie identities. The original baseline and collection context are not verified here; a same-count replacement may be invisible.`,
+    "Review the original baseline, scope label and collection conditions. A removed finding does not verify remediation or establish security.", [evidenceId])];
+  for (const category of comparisonCategories) for (const entry of entries[category]) {
+    const level = entry.to ?? entry.severity!;
+    const severity: Severity = category === "resolved" || category === "unchanged" ? "info" : level === "critical" ? "high" : level === "warning" ? "medium" : level as Severity;
+    result.push(finding(tool, `Baseline ${category}: ${entry.rule_id}`, severity,
+      `Scope: ${entry.scope}. Observations: ${entry.count}. ${category === "severity_changed" ? `Source severity shift: ${entry.from} -> ${entry.to}.` : `Source severity: ${entry.severity}.`} This records the supplied aggregate comparison, not independent verification of individual remediation.`,
+      "Use the retained source report and original baseline to investigate the count change; do not infer identity from ordinal positions.", [evidenceId]));
+  }
+  return result;
+}
+
 function importLimen(row: Row, evidenceId: string): Finding[] {
-  keys(row, ["schema_version", "summary", "findings", "errors"]);
+  keys(row, ["schema_version", "summary", "findings", "errors"], ["comparison"]);
   check(row.schema_version === 1);
   const summary = object(row.summary);
   keys(summary, ["servers", "findings", "errors"]);
@@ -421,6 +530,10 @@ function importLimen(row: Row, evidenceId: string): Finding[] {
         [evidenceId],
       ),
     );
+  if (row.comparison !== undefined) {
+    check(errors.length === 0);
+    result.push(...importComparison(row.comparison, "limen-mcp", items, evidenceId));
+  }
   return result;
 }
 
@@ -433,7 +546,7 @@ function importVallum(row: Row, evidenceId: string): Finding[] {
     "redirects",
     "summary",
     "findings",
-  ]);
+  ], ["comparison"]);
   check(row.schema_version === 1);
   choice(row.mode, ["offline", "online"]);
   string(row.target, 8192);
@@ -475,6 +588,7 @@ function importVallum(row: Row, evidenceId: string): Finding[] {
         [evidenceId],
       ),
     );
+  if (row.comparison !== undefined) result.push(...importComparison(row.comparison, "vallum-http", array(row.findings, 950), evidenceId));
   return result;
 }
 
@@ -745,6 +859,96 @@ function importLucerna(row: Row, evidenceId: string): Finding[] {
   return result;
 }
 
+const excubitorRules = ["vertical_scan", "horizontal_scan", "auth_bruteforce", "password_spray", "distributed_auth", "auth_success_after_fail", "web_path_scan", "web_denial_burst", "upstream_alert"] as const;
+function timestamp(value: unknown): number {
+  check(typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= 8640000000000);
+  return value;
+}
+function importExcubitorAlert(value: unknown, evidenceId: string): Finding {
+  const item = object(value);
+  keys(item, ["id", "rule", "severity", "ts", "first_seen", "src", "dst", "count", "summary", "evidence", "recommendation"], ["acknowledged"]);
+  const originalId = identifier(item.id);
+  const rule = choice(item.rule, excubitorRules);
+  const severity = choice(item.severity, ["critical", "high", "medium", "low", "info"] as const);
+  const ts = timestamp(item.ts);
+  const first = timestamp(item.first_seen);
+  check(first <= ts);
+  const count = integer(item.count);
+  check(count > 0);
+  const detail = object(item.evidence);
+  check(Object.keys(detail).length <= 32);
+  for (const [key, value] of Object.entries(detail)) {
+    check(/^[a-z][a-z0-9_]{0,63}$/.test(key));
+    const primitive = (entry: unknown) => {
+      if (typeof entry === "string") string(entry, 4096, true);
+      else if (typeof entry === "number") timestamp(entry);
+      else check(typeof entry === "boolean" || entry === null);
+    };
+    if (Array.isArray(value)) array(value, 64).forEach(primitive);
+    else primitive(value);
+  }
+  const threshold = integer(detail.threshold);
+  const window = integer(detail.window_seconds);
+  check(threshold > 0 && count >= threshold && first >= timestamp(detail.window_start) && timestamp(detail.window_end) === ts &&
+    Math.abs(timestamp(detail.window_start) - (ts - window)) < 0.000001);
+  const acknowledged = item.acknowledged === undefined ? false : boolean(item.acknowledged);
+  const result = finding("excubitor", string(item.summary, 500), severity === "critical" ? "high" : severity,
+    `Rule: ${rule}. Source alert: ${originalId}. Source severity: ${severity}. Source: ${string(item.src, 256)}. Target: ${string(item.dst, 256, true)}. Observations: ${count}. First seen: ${new Date(first * 1000).toISOString()}. Alert time: ${new Date(ts * 1000).toISOString()}. Source acknowledged: ${acknowledged}. Evidence: ${JSON.stringify(detail)}. ${rule === "upstream_alert" ? "This preserves an upstream sensor alert; it is not independent confirmation." : "This is a heuristic investigation lead, not proof of compromise."}`,
+    string(item.recommendation), [evidenceId]);
+  string(result.detail);
+  result.status = acknowledged ? "acknowledged" : "open";
+  return result;
+}
+function excubitorFindings(values: unknown[], evidenceId: string): Finding[] {
+  unique(values.map((value) => identifier(object(value).id)));
+  return values.map((value) => importExcubitorAlert(value, evidenceId));
+}
+function addCoverage(result: Finding[], coverage: Finding): Finding[] {
+  if (result.length < WORKSPACE_LIMITS.findingsCount) result.push(coverage);
+  else {
+    const first = result[0];
+    first.detail = string(`${first.detail} Collection scope: ${coverage.detail}`);
+  }
+  return result;
+}
+function importExcubitor(row: Row, evidenceId: string): Finding[] {
+  keys(row, ["schema", "alerts"]);
+  check(row.schema === "excubitor.alerts.v1");
+  const result = excubitorFindings(array(row.alerts, 1000), evidenceId);
+  return addCoverage(result, finding("excubitor", "Supplied alert export coverage", "info",
+    `${result.length} alerts are included in this export. The dashboard and final export retain at most 1,000 alerts; history queries are limited. No collection counters are supplied. An empty or partial export does not establish a clean network or complete collection.`,
+    "Retain the original logs and collection counters; review time range, query limits, dropped events and capacity evictions.", [evidenceId]));
+}
+function importExcubitorLines(text: string, evidenceId: string): Finding[] {
+  check(encoder.encode(text).length <= WORKSPACE_LIMITS.reportBytes, "Input exceeds the supported size limit.");
+  const lines = text.split(/\r?\n/).filter((line) => line.trim());
+  check(lines.length > 0 && lines.length <= 1001, "The stream exceeds the finding limit.");
+  const values = lines.map((line) => object(parseJson(line, 256 * 1024)));
+  let summary: Row | undefined;
+  if (Object.hasOwn(values[values.length - 1], "engine")) summary = values.pop();
+  const result = excubitorFindings(array(values, 1000), evidenceId);
+  let coverage = "No final collection summary was supplied; this may be a partial or live stream.";
+  let severity: Severity = "info";
+  if (summary) {
+    keys(summary, ["engine", "input_errors", "skipped_records", "retained_alerts", "replay_cancelled"]);
+    const engine = object(summary.engine);
+    const counters = ["received_events", "accepted_events", "late_events", "invalid_events", "duplicate_events", "allowlisted_events", "alerts", "cooldown_suppressed", "keys_evicted", "events_evicted", "keys_expired", "dedup_evicted", "cooldowns_evicted", "state_keys", "buffered_events", "dedup_keys", "cooldown_keys"];
+    keys(engine, counters);
+    counters.forEach((key) => integer(engine[key]));
+    integer(summary.input_errors); integer(summary.skipped_records); integer(summary.retained_alerts, 1000);
+    boolean(summary.replay_cancelled);
+    const accounted = ["accepted_events", "late_events", "invalid_events", "duplicate_events", "allowlisted_events"].reduce((sum, key) => sum + Number(engine[key]), 0);
+    check(Number.isSafeInteger(accounted) && Number(engine.received_events) === accounted);
+    check(Number(engine.alerts) >= values.length && Number(summary.retained_alerts) === Math.min(1000, Number(engine.alerts)));
+    const incomplete = summary.replay_cancelled || summary.input_errors || summary.skipped_records || engine.late_events || engine.invalid_events || engine.keys_evicted || engine.events_evicted || engine.dedup_evicted || engine.cooldowns_evicted || Number(engine.alerts) !== values.length;
+    severity = incomplete ? "high" : "info";
+    coverage = `${incomplete ? "Collection gaps, discarded observations, or a partial stream require review." : "Supplied counters report no collection gaps; this is not proof of complete detection."} Counters: ${JSON.stringify(summary)}`;
+  }
+  return addCoverage(result, finding("excubitor", "Supplied alert stream coverage", severity,
+    `${values.length} alerts imported. ${coverage} An empty stream is not a clean security assessment.`,
+    "Review original logs and collection limits. Source acknowledgement is not resolution. This workspace does not rerun detection.", [evidenceId]));
+}
+
 export function importReport(
   text: string,
   name: string,
@@ -752,10 +956,14 @@ export function importReport(
 ): Finding[] {
   string(name, 255);
   identifier(evidenceId);
+  if (/\.(?:jsonl|ndjson)$/i.test(name)) return importExcubitorLines(text, evidenceId);
   const row = object(parseJson(text, WORKSPACE_LIMITS.reportBytes));
+  if (row.comparison_scope === "aggregate-rule-scope" || row.version === "2.1.0")
+    return invalid("Baseline snapshots and SARIF are not finding reports. Import an ordinary tool JSON report, optionally including its comparison.");
   let result: Finding[];
   try {
-    if (row.tool === "lucerna-osint") result = importLucerna(row, evidenceId);
+    if (row.schema === "excubitor.alerts.v1") result = importExcubitor(row, evidenceId);
+    else if (row.tool === "lucerna-osint") result = importLucerna(row, evidenceId);
     else if (row.command === "verify" || row.command === "snapshot")
       result = importVestigium(row, evidenceId);
     else if (Object.prototype.hasOwnProperty.call(row, "mode"))
@@ -765,7 +973,7 @@ export function importReport(
     else return invalid();
   } catch {
     return invalid(
-      "Unsupported or inconsistent tool report. Supported reports: Limen MCP, Vallum HTTP, Vestigium Integrity CLI and Lucerna OSINT.",
+      "Unsupported or inconsistent tool report. Supported reports: Limen MCP, Vallum HTTP, Vestigium Integrity CLI, Lucerna OSINT and EXCUBITOR alert exports.",
     );
   }
   check(
@@ -1037,6 +1245,8 @@ export function buildReportMarkdown(value: WorkspaceCase): string {
       `### ${entry.severity.toUpperCase()} — ${markdown(entry.title)}`,
       "",
       `Source: ${markdown(entry.source)}`,
+      `Review status: ${entry.status ?? "open"}`,
+      `Analyst note: ${markdown(entry.analystNote || "No finding note recorded.")}`,
       "",
       markdown(entry.detail),
       "",
@@ -1064,7 +1274,7 @@ export function buildReportMarkdown(value: WorkspaceCase): string {
     "",
     "## Limits",
     "",
-    "This offline workspace records supplied evidence and heuristic observations. It does not execute actions, enforce permissions, establish source authenticity, verify digital signatures or prove live access revocation. Matching content hashes detect inconsistency with recorded hashes; they do not establish provenance or prevent an editor from changing both content and hashes.",
+    "Review status records an analyst decision, not independent verification of remediation. This offline workspace records supplied evidence and heuristic observations. It does not execute actions, enforce permissions, establish source authenticity, verify digital signatures or prove live access revocation. Matching content hashes detect inconsistency with recorded hashes; they do not establish provenance or prevent an editor from changing both content and hashes.",
     "",
   );
   return lines.join("\n");

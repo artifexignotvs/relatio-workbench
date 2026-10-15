@@ -1,5 +1,7 @@
 export type Severity = "high" | "medium" | "low" | "info";
 
+export type FindingStatus = "open" | "acknowledged" | "resolved";
+
 export interface Finding {
   id: string;
   title: string;
@@ -8,6 +10,8 @@ export interface Finding {
   detail: string;
   recommendation: string;
   evidenceIds: string[];
+  status?: FindingStatus;
+  analystNote?: string;
 }
 
 export interface Evidence {

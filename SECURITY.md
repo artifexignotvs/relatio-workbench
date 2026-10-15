@@ -7,3 +7,7 @@ The workspace does not authorize or perform network requests, shell commands, id
 For a suspected vulnerability, provide the smallest synthetic input that reproduces the issue and the affected version. Do not include credentials, personal records or private evidence in a public issue. Use the repository's private vulnerability reporting channel when available; otherwise share only a non-sensitive description while arranging private disclosure with the maintainer.
 
 Useful checks include malformed JSON, duplicate records, evidence tampering, stale UI operations, browser-storage failures and HTML/Markdown content that must remain inert.
+
+## Encrypted backups
+
+The optional encrypted case format authenticates a bounded plaintext case using AES-256-GCM and a passphrase-derived key. See README for exact parameters and limits. It does not encrypt browser storage or exported Markdown. Report a reproducible issue with synthetic data; never attach a real backup, passphrase, or case. Passphrase recovery is not available.

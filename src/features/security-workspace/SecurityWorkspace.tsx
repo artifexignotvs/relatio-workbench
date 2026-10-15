@@ -9,15 +9,18 @@ import {
   parseCase,
   reviewAction,
   serializeCase,
+  updateFindingReview,
 } from "./model";
 import { WORKSPACE_LIMITS } from "./types";
 import type {
   ActionPlan,
   Evidence,
   Finding,
+  FindingStatus,
   Severity,
   WorkspaceCase,
 } from "./types";
+import { BACKUP_LIMITS, decryptCase, encryptCase, isEncryptedBackup } from "./backup";
 import { createDemoCase } from "./fixtures";
 import { downloadText, evidenceFromFile, loadCases, saveCase } from "./storage";
 import "./security-workspace.css";
@@ -153,6 +156,13 @@ export function SecurityWorkspace() {
   const [notice, setNotice] = useState("");
   const [severity, setSeverity] = useState("all");
   const [source, setSource] = useState("all");
+  const [reviewStatus, setReviewStatus] = useState("all");
+  const [reviewDrafts, setReviewDrafts] = useState<Record<string, { status: FindingStatus; note: string }>>({});
+  const [backupFormat, setBackupFormat] = useState("encrypted");
+  const [backupMode, setBackupMode] = useState<"export" | "import">("export");
+  const backupDialog = useRef<HTMLDialogElement>(null);
+  const backupForm = useRef<HTMLFormElement>(null);
+  const encryptedInput = useRef("");
   const [query, setQuery] = useState("");
   const [findingId, setFindingId] = useState("");
   const [evidenceId, setEvidenceId] = useState("");
@@ -190,15 +200,22 @@ export function SecurityWorkspace() {
           (item) =>
             (severity === "all" || item.severity === severity) &&
             (source === "all" || item.source === source) &&
+            (reviewStatus === "all" || (item.status ?? "open") === reviewStatus) &&
             (!query ||
               (item.title + " " + item.detail + " " + item.source)
                 .toLowerCase()
                 .includes(query.toLowerCase())),
         )
         .sort((a, b) => order.indexOf(a.severity) - order.indexOf(b.severity)),
-    [current, severity, source, query],
+    [current, severity, source, query, reviewStatus],
   );
   const finding = current?.findings.find((item) => item.id === findingId);
+  const reviewKey = `${caseId}:${findingId}`;
+  const reviewDraft = reviewDrafts[reviewKey] ?? { status: finding?.status ?? "open", note: finding?.analystNote ?? "" };
+  const unsavedReviews = (item: WorkspaceCase) => item.findings.some((entry) => {
+    const draft = reviewDrafts[`${item.id}:${entry.id}`];
+    return draft && (draft.status !== (entry.status ?? "open") || draft.note !== (entry.analystNote ?? ""));
+  });
   const evidence = current?.evidence.find((item) => item.id === evidenceId);
 
   useEffect(() => {
@@ -240,6 +257,7 @@ export function SecurityWorkspace() {
     setEvidenceId("");
     setSeverity("all");
     setSource("all");
+    setReviewStatus("all");
     setQuery("");
     setActionResult(null);
     setAccessResult(null);
@@ -259,7 +277,7 @@ export function SecurityWorkspace() {
 
   // Notae nondum servatae in omnibus casibus ante discessum monentur.
   useEffect(() => {
-    const unsaved = cases.some(
+    const unsaved = cases.some(unsavedReviews) || cases.some(
       (item) =>
         Object.prototype.hasOwnProperty.call(noteDrafts.current, item.id) &&
         noteDrafts.current[item.id] !== item.notes,
@@ -271,7 +289,7 @@ export function SecurityWorkspace() {
     };
     window.addEventListener("beforeunload", warnBeforeLeaving);
     return () => window.removeEventListener("beforeunload", warnBeforeLeaving);
-  }, [cases, notes]);
+  }, [cases, notes, reviewDrafts]);
 
   // Mutatio memoriae tantum post transactionem felicem ostenditur.
   async function persist(next: WorkspaceCase) {
@@ -388,34 +406,58 @@ export function SecurityWorkspace() {
       },
     );
   }
+  async function storeImportedCase(parsed: WorkspaceCase) {
+    if (cases.some((item) => item.id === parsed.id))
+      throw new Error("This case already exists in the workspace. Your existing copy has been kept.");
+    await persist(parsed);
+    setCaseId(parsed.id);
+    setSection("overview");
+    setNotice("Case imported. Included evidence digests were checked. The opened case is stored unencrypted in this browser.");
+  }
   function importCase(file?: File) {
     if (!file) return;
-    void task("Importing case", async () => {
-      if (file.size > WORKSPACE_LIMITS.caseBytes)
-        throw new Error("Case file exceeds the supported size limit.");
+    void task("Reading case backup", async () => {
+      if (file.size > BACKUP_LIMITS.bytes)
+        throw new Error("Case backup exceeds the supported size limit.");
       const bytes = await file.arrayBuffer();
-      if (bytes.byteLength > WORKSPACE_LIMITS.caseBytes)
-        throw new Error("Case file exceeds the supported size limit.");
+      if (bytes.byteLength > BACKUP_LIMITS.bytes)
+        throw new Error("Case backup exceeds the supported size limit.");
       let text: string;
-      try {
-        text = new TextDecoder("utf-8", {
-          fatal: true,
-          ignoreBOM: true,
-        }).decode(bytes);
-      } catch {
-        throw new Error("Case files must contain valid UTF-8 text.");
+      try { text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes); }
+      catch { throw new Error("Case files must contain valid UTF-8 text."); }
+      if (isEncryptedBackup(text)) {
+        encryptedInput.current = text;
+        setBackupMode("import");
+        backupForm.current?.reset();
+        backupDialog.current?.showModal();
+      } else await storeImportedCase(await parseCase(text));
+    });
+  }
+  function closeBackup() {
+    backupForm.current?.reset();
+    encryptedInput.current = "";
+    backupDialog.current?.close();
+  }
+  function submitBackup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const passphrase = String(data.get("passphrase") ?? "");
+    const confirmation = String(data.get("confirmation") ?? "");
+    // Verba arcana neque in statu paginae neque in archivis servantur.
+    event.currentTarget.reset();
+    void task(backupMode === "export" ? "Protecting backup" : "Unlocking backup", async () => {
+      if (backupMode === "export") {
+        if (!current) return;
+        if (passphrase !== confirmation) throw new Error("The passphrases do not match. Enter both again.");
+        if (notes !== current.notes || unsavedReviews(current)) throw new Error("Save your notes and finding reviews before exporting.");
+        const encrypted = await encryptCase(current, passphrase);
+        downloadText("relatio-backup-" + new Date().toISOString().slice(0, 10) + ".json", encrypted, "application/json");
+        closeBackup();
+        setNotice("Encrypted backup download prepared. Keep its passphrase separately; it cannot be recovered here.");
+      } else {
+        await storeImportedCase(await decryptCase(encryptedInput.current, passphrase));
+        closeBackup();
       }
-      const parsed = await parseCase(text);
-      if (cases.some((item) => item.id === parsed.id))
-        throw new Error(
-          "This case already exists in the workspace. Your existing copy has been kept.",
-        );
-      await persist(parsed);
-      setCaseId(parsed.id);
-      setSection("overview");
-      setNotice(
-        "Case imported. Included evidence digests were checked against their contents.",
-      );
     });
   }
   function submitAction(event: FormEvent) {
@@ -476,10 +518,17 @@ export function SecurityWorkspace() {
   function exportCase(report: boolean) {
     if (!current) return;
     try {
-      if (notes !== current.notes)
+      if (notes !== current.notes || unsavedReviews(current))
         throw new Error(
-          "Save your analyst notes before exporting the case or report.",
+          "Save your analyst notes and finding reviews before exporting the case or report.",
         );
+      if (!report && backupFormat === "encrypted") {
+        setError("");
+        setBackupMode("export");
+        backupForm.current?.reset();
+        backupDialog.current?.showModal();
+        return;
+      }
       downloadText(
         stem(current.title) + (report ? "-report.md" : ".json"),
         report ? buildReportMarkdown(current) : serializeCase(current),
@@ -589,7 +638,7 @@ export function SecurityWorkspace() {
           className="sw-hidden-input"
           type="file"
           accept=".json,application/json"
-          aria-label="Import case JSON"
+          aria-label="Import encrypted or plaintext case backup"
           onChange={(event) => {
             importCase(event.currentTarget.files?.[0]);
             event.currentTarget.value = "";
@@ -599,9 +648,9 @@ export function SecurityWorkspace() {
           ref={findingInput}
           className="sw-hidden-input"
           type="file"
-          accept=".json,application/json"
+          accept=".json,.jsonl,.ndjson,application/json"
           multiple
-          aria-label="Import findings JSON"
+          aria-label="Import findings JSON or JSONL"
           onChange={(event) => {
             importFiles(event.currentTarget.files, true);
             event.currentTarget.value = "";
@@ -611,7 +660,7 @@ export function SecurityWorkspace() {
           ref={evidenceInput}
           className="sw-hidden-input"
           type="file"
-          accept=".json,.txt,.md,.csv,.log,.html,application/json,text/*"
+          accept=".json,.jsonl,.ndjson,.txt,.md,.csv,.log,.html,application/json,text/*"
           multiple
           aria-label="Add evidence files"
           onChange={(event) => {
@@ -857,6 +906,13 @@ export function SecurityWorkspace() {
                           ))}
                         </select>
                       </label>
+                      <label>
+                        <span className="sw-sr-only">Filter by review status</span>
+                        <select aria-label="Filter by review status" value={reviewStatus} onChange={(event) => setReviewStatus(event.target.value)}>
+                          <option value="all">All review states</option>
+                          <option value="open">Open</option><option value="acknowledged">Acknowledged</option><option value="resolved">Resolved</option>
+                        </select>
+                      </label>
                       <span>{visible.length} shown</span>
                     </div>
                     {visible.length ? (
@@ -866,6 +922,7 @@ export function SecurityWorkspace() {
                             <tr>
                               <th>Severity</th>
                               <th>Finding</th>
+                              <th>Status</th>
                               <th>Source</th>
                               <th>Evidence</th>
                               <th>
@@ -898,6 +955,7 @@ export function SecurityWorkspace() {
                                     {item.title}
                                   </button>
                                 </td>
+                                <td>{item.status ?? "open"}</td>
                                 <td>
                                   <span className="sw-source">
                                     {item.source}
@@ -973,6 +1031,27 @@ export function SecurityWorkspace() {
                           </p>
                         </div>
                       </div>
+                      <form className="sw-triage-form" onSubmit={(event) => {
+                        event.preventDefault();
+                        void task("Saving finding review", async () => {
+                          await persist(updateFindingReview(current, finding.id, reviewDraft.status, reviewDraft.note));
+                          setReviewDrafts((drafts) => { const next = { ...drafts }; delete next[reviewKey]; return next; });
+                          setNotice("Finding review saved locally.");
+                        });
+                      }}>
+                        <fieldset className="sw-form-lock" disabled={Boolean(busy)}>
+                          <label className="sw-field">Review status
+                            <select aria-label="Finding review status" value={reviewDraft.status} onChange={(event) => setReviewDrafts((drafts) => ({ ...drafts, [reviewKey]: { ...reviewDraft, status: event.target.value as FindingStatus } }))}>
+                              <option value="open">Open</option><option value="acknowledged">Acknowledged</option><option value="resolved">Resolved</option>
+                            </select>
+                          </label>
+                          <label className="sw-field">Finding note
+                            <textarea rows={3} maxLength={4000} value={reviewDraft.note} onChange={(event) => setReviewDrafts((drafts) => ({ ...drafts, [reviewKey]: { ...reviewDraft, note: event.target.value } }))} placeholder="Record your decision, supporting context, and next step." />
+                          </label>
+                          <p className="sw-preview-limit">Resolved records your assessment. It does not verify remediation in another system.</p>
+                          <button className="sw-button sw-button-primary" type="submit">Save finding review</button>
+                        </fieldset>
+                      </form>
                       <div className="sw-linked-evidence">
                         <span>Linked evidence</span>
                         {finding.evidenceIds.length ? (
@@ -1006,7 +1085,7 @@ export function SecurityWorkspace() {
                       <h2>Import tool findings</h2>
                       <p>
                         Bring JSON reports from Limen, Vallum, Lucerna or
-                        Vestigium into this case. The original report is
+                        Vestigium, and EXCUBITOR alert JSON or JSONL, into this case. The original report is
                         retained.
                       </p>
                       <button
@@ -1015,7 +1094,7 @@ export function SecurityWorkspace() {
                         onClick={() => findingInput.current?.click()}
                         disabled={Boolean(busy)}
                       >
-                        Choose JSON reports <Icon name="arrow" size={16} />
+                        Choose report files <Icon name="arrow" size={16} />
                       </button>
                       <small>Supported schemas · UTF-8 · 2 MB per file</small>
                     </div>
@@ -1497,7 +1576,7 @@ export function SecurityWorkspace() {
                         <button
                           className="sw-button sw-button-primary"
                           type="button"
-                          disabled={Boolean(busy) || notes !== current.notes}
+                          disabled={Boolean(busy) || notes !== current.notes || unsavedReviews(current)}
                           onClick={() => exportCase(true)}
                         >
                           <Icon name="download" size={16} />
@@ -1508,21 +1587,29 @@ export function SecurityWorkspace() {
                             Save your notes to include the latest edits.
                           </small>
                         )}
+                        {unsavedReviews(current) && <small className="sw-unsaved-note">Save your finding reviews in Overview before exporting.</small>}
                       </div>
                       <div className="sw-panel sw-export-card sw-export-secondary">
                         <h2>Complete case backup</h2>
                         <p>
-                          Export JSON to move or restore the case, including the
-                          full contents of its evidence files.
+                          Move or restore the case with all evidence files.
+                          Choose a passphrase-protected backup or readable JSON.
                         </p>
+                        <label className="sw-field">Backup format
+                          <select value={backupFormat} onChange={(event) => setBackupFormat(event.target.value)} disabled={Boolean(busy)}>
+                            <option value="encrypted">Encrypted — requires a passphrase</option>
+                            <option value="plaintext">Plaintext JSON — readable evidence</option>
+                          </select>
+                        </label>
+                        <p className="sw-preview-limit">{backupFormat === "encrypted" ? "Protects the downloaded backup. Browser storage stays unencrypted." : "Anyone with this file can read the complete case and evidence."}</p>
                         <button
                           className="sw-button sw-button-outline"
                           type="button"
-                          disabled={Boolean(busy) || notes !== current.notes}
+                          disabled={Boolean(busy) || notes !== current.notes || unsavedReviews(current)}
                           onClick={() => exportCase(false)}
                         >
                           <Icon name="download" size={16} />
-                          Export case JSON
+                          Export case backup
                         </button>
                       </div>
                     </aside>
@@ -1530,7 +1617,8 @@ export function SecurityWorkspace() {
                   <Boundary>
                     Local storage is not encrypted by this workspace. Save notes
                     before exporting. Case exports contain evidence contents;
-                    review them before sharing. Keep a backup before clearing
+                    choose encrypted backups for protected storage. Keep the
+                    passphrase separately. Review plaintext reports before sharing. Keep a backup before clearing
                     browser data.
                   </Boundary>
                   <section className="sw-panel sw-report-preview">
@@ -1551,6 +1639,26 @@ export function SecurityWorkspace() {
           )}
         </main>
       </div>
+      <dialog ref={backupDialog} className="sw-dialog" onCancel={(event) => { if (busy) event.preventDefault(); else closeBackup(); }} onClose={() => { backupForm.current?.reset(); encryptedInput.current = ""; }}>
+        <form ref={backupForm} onSubmit={submitBackup}>
+          <fieldset className="sw-form-lock" disabled={Boolean(busy)}>
+            <h2>{backupMode === "export" ? "Protect this backup." : "Unlock your backup."}</h2>
+            <p>{backupMode === "export" ? "Choose a long, unique passphrase. There is no reset or recovery. The opened case in this browser stays unencrypted." : "Enter the passphrase used when this backup was created. Importing restores an unencrypted local case."}</p>
+            <label className="sw-field">Passphrase
+              <input name="passphrase" type="password" required minLength={BACKUP_LIMITS.passphraseMin} maxLength={BACKUP_LIMITS.passphraseMax} autoComplete="off" spellCheck={false} />
+            </label>
+            {backupMode === "export" && <label className="sw-field">Repeat passphrase
+              <input name="confirmation" type="password" required minLength={BACKUP_LIMITS.passphraseMin} maxLength={BACKUP_LIMITS.passphraseMax} autoComplete="off" spellCheck={false} />
+            </label>}
+            <small>At least 12 characters. Spaces and letter case matter. The passphrase is not saved.</small>
+            {error && <p className="sw-dialog-error" role="alert">{error}</p>}
+            <div className="sw-dialog-actions">
+              <button className="sw-button sw-button-outline" type="button" onClick={closeBackup}>Cancel</button>
+              <button className="sw-button sw-button-primary" type="submit">{busy ? "Working…" : backupMode === "export" ? "Download encrypted backup" : "Unlock and import"}</button>
+            </div>
+          </fieldset>
+        </form>
+      </dialog>
       <dialog ref={dialog} className="sw-dialog">
         <form onSubmit={submitCase}>
           <fieldset className="sw-form-lock" disabled={Boolean(busy)}>
